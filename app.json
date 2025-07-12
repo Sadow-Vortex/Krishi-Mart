@@ -16,7 +16,12 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyAFJMgs61N9l4wckoqdC1M2XcA652h-tBU"
+        }
+      }
     },
     "web": {
       "bundler": "metro",
@@ -33,7 +38,9 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "expo-web-browser",
+      "expo-maps"
     ],
     "experiments": {
       "typedRoutes": true
