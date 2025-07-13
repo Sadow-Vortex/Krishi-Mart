@@ -17,10 +17,6 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "config": {
-        "googleMaps": {
-          "apiKey": "API_KEY"
-        }
       }
     },
     "web": {
