@@ -14,7 +14,6 @@ export default function EditProfile() {
     useEffect(() => {
         if (userId) {
             fetchUserDetails();
-            console.log("accessed")
         }else{
             console.log("NA");
         }

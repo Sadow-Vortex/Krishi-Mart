@@ -61,7 +61,7 @@ export default function HomeScreen() {
                 .slice(0, 5);
             setPopularAds(sortedAds);
         } catch (error) {
-            console.error("Error fetching popular ads:", error);
+            console.error("Error fetching popular ads:");
         }
     };
 

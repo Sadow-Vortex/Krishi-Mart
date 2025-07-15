@@ -29,7 +29,7 @@ export default function SignUp(){
                 navigation.navigate('LoginScreen')
             }else {
                 const error = await response.text();
-                Alert.alert('user name already taken.',error);
+                Alert.alert('user name already taken.');
             }
         }catch(err){
             console.error(err);

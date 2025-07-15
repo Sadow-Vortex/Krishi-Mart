@@ -144,26 +144,6 @@ const Advertisement = () => {
         }
     };
 
-
-    // const PickImage = async () => {
-    //     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    //     if (!permission.granted) {
-    //         alert("Permission to access camera roll is required!");
-    //         return;
-    //     }
-    //
-    //     const result = await ImagePicker.launchImageLibraryAsync({
-    //         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-    //         allowsEditing: true,
-    //         quality: 1,
-    //     });
-    //
-    //     if (!result.canceled) {
-    //         const uri = result.assets[0].uri;
-    //         setFormData(prev => ({ ...prev, adv_Image: uri }));
-    //     }
-    // };
-
     const PickImage = async () => {
         const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (!permission.granted) {

@@ -39,7 +39,7 @@ export default function UserAdvertisements() {
                 setLoading(false);
             })
             .catch((err) => {
-                console.error('Error fetching ads:', err);
+                console.error('Error fetching ads:');
                 setLoading(false);
             });
     };

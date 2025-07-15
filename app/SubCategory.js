@@ -70,7 +70,8 @@ export default function SubCategory() {
         return (
             <>
                 <View style={styles.header}>
-                    <Text style={styles.brand}>Krishi Mart</Text>
+                    <Text style={styles.brand}>Kisan Seva</Text>
+                    <Text style={styles.title}>your trusted farmer platform</Text>
                 </View>
                 <Text style={{ textAlign: "center", marginTop: 50 }}>No Sub Categories</Text>
                 <Footer/>

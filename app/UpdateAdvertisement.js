@@ -43,7 +43,7 @@ const UpdateAdvertisement = () => {
                 setCategories(response.data?.data || []);
             })
             .catch(err => {
-                console.error("Category fetch failed:", err);
+                console.error("Category fetch failed:");
             });
     }, []);
 

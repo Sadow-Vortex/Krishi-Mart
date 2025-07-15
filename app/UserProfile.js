@@ -36,7 +36,7 @@ export default function UserProfile() {
                     navigation.reset({ index: 0, routes: [{ name: 'LoginScreen' }] });
                 }
             } catch (err) {
-                console.error("Error loading user:", err);
+                console.error("Error loading user:");
                 Alert.alert("Error", "Could not load user data.");
             } finally {
                 setLoading(false);

@@ -31,7 +31,7 @@ export default function AdsBySubCategory() {
             const response = await axios.get(`${url}/adv/subCategory/${subCategoryId}`);
             setAds(Array.isArray(response.data.data) ? response.data.data : []);
         } catch (error) {
-            console.error('Failed to fetch ads:', error);
+            console.error('Failed to fetch ads:');
         } finally {
             setLoading(false);
         }

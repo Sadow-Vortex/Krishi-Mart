@@ -33,7 +33,6 @@ export default function LoginScreen() {
                 body: `phoneNumber=${encodeURIComponent(number)}&password=${encodeURIComponent(password)}`
             });
 
-            console.log('Sent login for:', number, password);
 
             if (response.ok) {
                 const json = await response.json();
