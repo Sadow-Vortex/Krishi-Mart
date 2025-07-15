@@ -7,7 +7,7 @@ export default function LoginScreen() {
     const navigation = useNavigation();
     const [number, setNumber] = useState('');
     const [password, setPassword] = useState('');
-    const url = `http://192.168.0.125:1012`;
+    const url = `http://10.0.167.11:1012`;
 
     const dumpAsyncStorage = async () => {
         const keys = await AsyncStorage.getAllKeys();

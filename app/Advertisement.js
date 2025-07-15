@@ -20,8 +20,8 @@ const Advertisement = () => {
     const [locationHandled, setLocationHandled] = useState(false);
     const [categories, setCategories] = useState([]);
     const [subcategories, setSubcategories] = useState([]);
-    const url = "http://192.168.0.125:2001";
-    const urll = "http://192.168.0.125:2012";
+    const url = "http://10.0.167.11:2001";
+    const urll = "http://10.0.167.11:2012";
     const [uploading, setUploading] = useState(false);
 
 
@@ -145,24 +145,6 @@ const Advertisement = () => {
     };
 
 
-    const PickImage = async () => {
-        const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (!permission.granted) {
-            alert("Permission to access camera roll is required!");
-            return;
-        }
-
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            quality: 1,
-        });
-
-        if (!result.canceled) {
-            const uri = result.assets[0].uri;
-            setFormData(prev => ({ ...prev, adv_Image: uri }));
-        }
-    };
     // const PickImage = async () => {
     //     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     //     if (!permission.granted) {
@@ -177,36 +159,60 @@ const Advertisement = () => {
     //     });
     //
     //     if (!result.canceled) {
-    //         const localUri = result.assets[0].uri;
-    //         const filename = localUri.split('/').pop();
-    //         const match = /\.(\w+)$/.exec(filename ?? '');
-    //         const type = match ? `image/${match[1]}` : `image`;
-    //
-    //         const formDataImage = new FormData();
-    //         formDataImage.append('file', {
-    //             uri: localUri,
-    //             name: filename,
-    //             type
-    //         });
-    //
-    //         try {
-    //             const response = await axios.post(`${urll}/adv/upload`, formDataImage, {
-    //                 headers: {
-    //                     'Content-Type': 'multipart/form-data',
-    //                 },
-    //             });
-    //
-    //             const imageUrl = response.data?.url || response.data; // adjust this depending on your backend's response
-    //             setFormData(prev => ({ ...prev, adv_Image: imageUrl }));
-    //         } catch (error) {
-    //             console.error('Image upload failed:', error);
-    //             Alert.alert('Upload Error', 'Failed to upload image. Try again.');
-    //         }
+    //         const uri = result.assets[0].uri;
+    //         setFormData(prev => ({ ...prev, adv_Image: uri }));
     //     }
     // };
 
+    const PickImage = async () => {
+        const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (!permission.granted) {
+            alert("Permission to access camera roll is required!");
+            return;
+        }
 
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            quality: 1,
+        });
 
+        if (!result.canceled) {
+            const localUri = result.assets[0].uri;
+            const filename = localUri.split('/').pop();
+            const match = /\.(\w+)$/.exec(filename ?? '');
+            const type = match ? `image/${match[1]}` : `image`;
+
+            const formDataImage = new FormData();
+            formDataImage.append('file', {
+                uri: localUri,
+                name: filename,
+                type,
+            });
+
+            try {
+                setUploading(true); // optional: show loading indicator
+                const response = await axios.post(`${urll}/adv/upload`, formDataImage, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                });
+
+                const imageUrl = response.data?.url;
+                if (imageUrl) {
+                    setFormData(prev => ({ ...prev, adv_Image: imageUrl }));
+                    console.log("✅ Uploaded Image URL:", imageUrl);
+                } else {
+                    Alert.alert('Upload Failed', 'No URL returned from server.');
+                }
+            } catch (error) {
+                console.error('❌ Image upload failed:', error);
+                Alert.alert('Upload Error', 'Failed to upload image. Try again.');
+            } finally {
+                setUploading(false);
+            }
+        }
+    };
 
     const validateForm = () => {
         const { adv_CategoryID, adv_subCategoryID, adv_Title, adv_Unit, adv_Price } = formData;
@@ -414,17 +420,17 @@ const styles = StyleSheet.create({
         shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.25, shadowRadius: 3.84, zIndex: 10,
     },
-        inputWithIcon: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            borderWidth: 1,
-            borderColor: '#ccc',
-            borderRadius: 5,
-            paddingHorizontal: 10,
-            marginBottom: 15,
-            backgroundColor: '#fff',
-            justifyContent: 'space-between',
-        },
+    inputWithIcon: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 5,
+        paddingHorizontal: 10,
+        marginBottom: 15,
+        backgroundColor: '#fff',
+        justifyContent: 'space-between',
+    },
     inputFlex: { flex: 1, paddingVertical: 8, fontSize: 16 },
     icon: { marginRight: 8 },
     selectedLocationText: {

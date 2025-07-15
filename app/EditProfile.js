@@ -9,7 +9,7 @@ export default function EditProfile() {
     const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    const API_BASE_URL = 'http://192.168.0.125:1012/users';
+    const API_BASE_URL = 'http://10.0.167.11:1012/users';
 
     useEffect(() => {
         if (userId) {

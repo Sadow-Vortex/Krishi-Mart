@@ -9,131 +9,115 @@ import { useNavigation } from "expo-router";
 import * as ImagePicker from 'expo-image-picker';
 import Footer from "./Footer";
 import { useRoute } from "@react-navigation/native";
+import axios from "axios";
 
 export default function UserProfile() {
     const navigation = useNavigation();
     const [user, setUser] = useState(null);
-    const route = useRoute();
-    const { userId, subCategoryId } = route.params || {};
     const [loading, setLoading] = useState(true);
-
-    const apiURL = `http://192.168.0.125:1012`;
+    const apiURL = `http://10.0.167.11:1012`;
 
     useLayoutEffect(() => {
         navigation.setOptions({ headerShown: false });
     }, [navigation]);
 
     useEffect(() => {
-        fetchUser();
-    }, []);
-
-    const fetchUser = async () => {
-        try {
-            const storedUser = await AsyncStorage.getItem('user');
-            if (storedUser) {
-                const parsedUser = JSON.parse(storedUser);
-                setUser(parsedUser);
-            } else {
-                Alert.alert('Login Required', 'Please log in again.');
-                navigation.reset({
-                    index: 0,
-                    routes: [{ name: 'LoginScreen' }],
-                });
-            }
-        } catch (error) {
-            console.error('Failed to load user from storage:', error);
-            Alert.alert('Error', 'Failed to load user from storage.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const updateImage = async (field) => {
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            aspect: field === 'coverPic' ? [4, 2] : [1, 1],
-            quality: 1,
-        });
-
-        if (!result.canceled) {
-            const imageUri = result.assets[0].uri;
-
-            const formData = new FormData();
-            formData.append('image', {
-                uri: imageUri,
-                name: `${field}.jpg`,
-                type: 'image/jpeg',
-            });
-
+        const loadUser = async () => {
             try {
-                const uploadResponse = await fetch(`${apiURL}/upload`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                    },
-                    body: formData,
-                });
-
-                const uploadResult = await uploadResponse.json();
-
-                if (!uploadResult?.url) {
-                    throw new Error("Image upload failed");
+                const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+                if (status !== 'granted') {
+                    Alert.alert('Permission Denied', 'Please allow access to your photos.');
                 }
 
-                const imageUrl = uploadResult.url;
+                const storedUser = await AsyncStorage.getItem('user');
+                if (storedUser) {
+                    setUser(JSON.parse(storedUser));
+                } else {
+                    navigation.reset({ index: 0, routes: [{ name: 'LoginScreen' }] });
+                }
+            } catch (err) {
+                console.error("Error loading user:", err);
+                Alert.alert("Error", "Could not load user data.");
+            } finally {
+                setLoading(false);
+            }
+        };
 
-                const updatedUser = { ...user, [field]: imageUrl };
-                const response = await fetch(`${apiURL}/users/${user.id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(updatedUser),
+        loadUser();
+    }, []);
+
+    const updateImage = async (field) => {
+        try {
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                aspect: field === 'coverPic' ? [4, 2] : [1, 1],
+                quality: 1,
+            });
+
+            if (!result.canceled) {
+                const imageUri = result.assets[0].uri;
+                const filename = imageUri.split('/').pop();
+                const match = /\.(\w+)$/.exec(filename ?? '');
+                const type = match ? `image/${match[1]}` : `image`;
+
+                const formData = new FormData();
+                formData.append('file', {
+                    uri: imageUri,
+                    name: filename,
+                    type: type,
                 });
 
-                const json = await response.json();
-                setUser(json.data[0]);
-                Alert.alert('Success', `${field === 'profilePic' ? 'Profile' : 'Cover'} picture updated`);
-            } catch (error) {
-                console.error(error);
-                Alert.alert('Error', 'Failed to update picture.');
+                const uploadRes = await axios.post(`${apiURL}/users/upload`, formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                });
+
+                const imageUrl = uploadRes.data?.url;
+                if (!imageUrl) throw new Error("Image upload failed");
+
+                const updatedUser = { ...user, [field]: imageUrl };
+                const updateRes = await axios.put(`${apiURL}/users/${user.id}`, updatedUser, {
+                    headers: { 'Content-Type': 'application/json' },
+                });
+
+                const updatedUserData = updateRes.data?.data;
+
+                if (updatedUserData) {
+                    const finalUser = Array.isArray(updatedUserData) ? updatedUserData[0] : updatedUserData;
+                    setUser(finalUser);
+                    await AsyncStorage.setItem('user', JSON.stringify(finalUser));
+                    Alert.alert('Success', `${field === 'profilePic' ? 'Profile' : 'Cover'} picture updated`);
+                } else {
+                    throw new Error("User update response missing data");
+                }
+
             }
-        }
-    };
-
-    const handleEdit = async () => {
-        try {
-            navigation.navigate('EditProfile', { userId: user.id });
         } catch (error) {
-            Alert.alert('Error', 'Failed to navigate to EditProfile.');
+            console.error("Upload error:", error);
+            Alert.alert('Error', 'Failed to update picture.');
         }
     };
 
-    const handleAds = async () => {
-        try {
-            navigation.navigate('MyAds', { userId: user.id });
-        } catch (error) {
-            Alert.alert('Error', 'Failed to navigate to MyAds.');
-        }
-    };
-
+    const handleEdit = () => navigation.navigate('EditProfile', { userId: user?.id });
+    const handleAds = () => navigation.navigate('MyAds', { userId: user?.id });
     const handleLogOut = async () => {
         try {
-            await AsyncStorage.removeItem('user');
-            await AsyncStorage.removeItem('isLogin');
-            await AsyncStorage.removeItem('userId');
+            await AsyncStorage.multiRemove(['user', 'isLogin', 'userId']);
             Alert.alert('You have been logged out');
-            navigation.reset({
-                index: 0,
-                routes: [{ name: 'LoginScreen' }],
-            });
+            navigation.reset({ index: 0, routes: [{ name: 'LoginScreen' }] });
         } catch (err) {
-            Alert.alert('Failed to log out');
             console.error(err);
+            Alert.alert('Error', 'Failed to log out');
         }
     };
 
-    if (loading) return <ActivityIndicator size="large" style={{ marginTop: 50 }} />;
-    if (!user) return navigation.navigate('LoginScreen');
+    if (loading || !user) {
+        return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <ActivityIndicator size="large" />
+            </View>
+        );
+    }
 
     return (
         <View style={styles.container}>
@@ -149,6 +133,7 @@ export default function UserProfile() {
                     <Ionicons name="camera" size={22} color="#fff" />
                 </TouchableOpacity>
             </View>
+
             <View style={styles.profilePicContainer}>
                 {user.profilePic ? (
                     <Image source={{ uri: user.profilePic }} style={styles.profilePic} />
@@ -184,83 +169,32 @@ export default function UserProfile() {
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#f4f7fb',
-        alignItems: 'center',
-        paddingTop: 40,
-    },
-    cover: {
-        width: '100%',
-        height: 180,
-    },
+    container: { flex: 1, backgroundColor: '#f4f7fb', alignItems: 'center', paddingTop: 40 },
+    cover: { width: '100%', height: 180 },
     coverPlaceholder: {
-        width: '100%',
-        height: 180,
-        backgroundColor: '#e0e0e0',
-        justifyContent: 'center',
-        alignItems: 'center',
+        width: '100%', height: 180, backgroundColor: '#e0e0e0',
+        justifyContent: 'center', alignItems: 'center',
     },
     profilePicContainer: {
-        position: 'absolute',
-        top: 130,
-        borderWidth: 3,
-        borderColor: '#fff',
-        borderRadius: 75,
-        overflow: 'hidden',
-        backgroundColor: '#fff',
-        width: 100,
-        height: 100,
-        justifyContent: 'center',
-        alignItems: 'center',
-        zIndex: 2,
+        position: 'absolute', top: 130, borderWidth: 3, borderColor: '#fff',
+        borderRadius: 75, overflow: 'hidden', backgroundColor: '#fff',
+        width: 100, height: 100, justifyContent: 'center', alignItems: 'center', zIndex: 2,
     },
-    profilePic: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
-    },
-    name: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        marginTop: 10,
-    },
-    username: {
-        fontSize: 14,
-        color: '#888',
-        marginBottom: 20,
-    },
+    profilePic: { width: 100, height: 100, borderRadius: 50 },
+    name: { fontSize: 20, fontWeight: 'bold', marginTop: 10 },
+    username: { fontSize: 14, color: '#888', marginBottom: 20 },
     button: {
-        width: '80%',
-        backgroundColor: '#3478f6',
-        padding: 12,
-        borderRadius: 8,
-        marginTop: 10,
-        alignItems: 'center',
+        width: '80%', backgroundColor: '#3478f6', padding: 12, borderRadius: 8,
+        marginTop: 10, alignItems: 'center',
     },
-    buttonText: {
-        color: '#fff',
-        fontWeight: '600',
-    },
-    coverWrapper: {
-        width: '100%',
-        height: 180,
-        position: 'relative',
-    },
+    buttonText: { color: '#fff', fontWeight: '600' },
+    coverWrapper: { width: '100%', height: 180, position: 'relative' },
     cameraCoverIcon: {
-        position: 'absolute',
-        bottom: 10,
-        right: 10,
-        backgroundColor: '#0008',
-        padding: 6,
-        borderRadius: 20,
+        position: 'absolute', bottom: 10, right: 10, backgroundColor: '#0008',
+        padding: 6, borderRadius: 20,
     },
     cameraProfileIcon: {
-        position: 'absolute',
-        bottom: 2,
-        right: 2,
-        backgroundColor: '#0008',
-        padding: 4,
-        borderRadius: 15,
+        position: 'absolute', bottom: 2, right: 2, backgroundColor: '#0008',
+        padding: 4, borderRadius: 15,
     },
 });

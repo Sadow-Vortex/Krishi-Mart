@@ -15,7 +15,7 @@ export default function SubCategory() {
     const { categoryId } = useLocalSearchParams();
     const [subCategory, setSubCategory] = useState([]);
     const [loading, setLoading] = useState(true);
-    const url = `http://192.168.0.125:2001`;
+    const url = `http://10.0.167.11:2001`;
 
     useLayoutEffect(()=>{
         navigation.setOptions({
@@ -81,7 +81,8 @@ export default function SubCategory() {
     return (
         <View  style={{ flex: 1, backgroundColor: '#f4f7fb' }}>
             <View style={styles.header}>
-                <Text style={styles.brand}>Krishi Mart</Text>
+                <Text style={styles.brand}>Kisan Seva</Text>
+                <Text style={styles.title}>your trusted farmer platform</Text>
             </View>
             <FlatList
                 data={subCategory}
@@ -114,7 +115,7 @@ const styles = StyleSheet.create({
     brand: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: '#2563eb',
+        color: '#217300',
     },
     image: {
         width: IMAGE_WIDTH,

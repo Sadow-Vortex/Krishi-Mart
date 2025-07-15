@@ -8,7 +8,7 @@ export default function SignUp(){
     const [username, setUsername] = React.useState('');
     const [number, setNumber] = React.useState('');
     const [password, setPassword] = React.useState('');
-    const url = `http://192.168.0.125:1012`;
+    const url = `http://10.0.167.11:1012`;
 
     const handleSignUp = async () => {
         try {

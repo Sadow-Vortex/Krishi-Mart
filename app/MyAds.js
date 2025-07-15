@@ -8,7 +8,7 @@ import { Feather } from '@expo/vector-icons';
 import Footer from "./Footer";
 import {useFocusEffect} from "@react-navigation/native";
 
-const BACKEND_URL = 'http://192.168.0.125:2012';
+const BACKEND_URL = 'http://10.0.167.11:2012';
 
 export default function UserAdvertisements() {
     const navigation = useNavigation();
@@ -103,6 +103,10 @@ export default function UserAdvertisements() {
 
     return (
         <View style={styles.container}>
+            <View style={styles.header}>
+                <Text style={styles.brand}>Kisan Seva</Text>
+                <Text style={styles.title}>your trusted farmer platform</Text>
+            </View>
             <Text style={styles.header}>Your Posted Advertisements</Text>
             {ads.length === 0 ? (
                 <Text style={styles.empty}>No ads posted yet.</Text>

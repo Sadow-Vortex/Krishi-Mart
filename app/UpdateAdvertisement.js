@@ -16,8 +16,8 @@ const UpdateAdvertisement = () => {
     const route = useRoute();
     const { adData } = route.params;
 
-    const url = "http://192.168.0.125:2001";
-    const urll = "http://192.168.0.125:2012";
+    const url = "http://10.0.167.11:2001";
+    const urll = "http://10.0.167.11:2012";
     const [categories, setCategories] = useState([]);
     const [subcategories, setSubcategories] = useState([]);
 
